@@ -1,23 +1,20 @@
+"""Detect emotions using the Watson emotion service."""
+
 import json
 import requests
 
 
 def emotion_detector(text_to_analyze):
-    """Return emotion scores and the dominant emotion."""
+    """Return emotion scores, or None values for invalid input."""
     url = (
         "https://sn-watson-emotion.labs.skills.network"
         "/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
     )
-
     headers = {
-        "grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"
+        "grpc-metadata-mm-model-id":
+        "emotion_aggregated-workflow_lang_en_stock"
     }
-
-    input_json = {
-        "raw_document": {
-            "text": text_to_analyze
-        }
-    }
+    input_json = {"raw_document": {"text": text_to_analyze}}
 
     response = requests.post(
         url,
@@ -26,16 +23,21 @@ def emotion_detector(text_to_analyze):
         timeout=30
     )
 
-    # Convert the response text into a Python dictionary.
+    if response.status_code == 400:
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None
+        }
+
+    response.raise_for_status()
     response_dict = json.loads(response.text)
-
-    # Extract the emotion scores from the first prediction.
     emotions = response_dict["emotionPredictions"][0]["emotion"]
-
-    # Find the emotion whose score is highest.
     dominant_emotion = max(emotions, key=emotions.get)
 
-    # Return the exact fields required by Task 3.
     return {
         "anger": emotions["anger"],
         "disgust": emotions["disgust"],
