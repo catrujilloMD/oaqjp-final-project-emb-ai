@@ -16,10 +16,13 @@ def index():
 def emotion_detector_route():
     """Analyze text and display scores or an invalid-input message."""
     text_to_analyze = request.args.get("textToAnalyze", "")
+    if not text_to_analyze.strip():
+        return "Invalid text! Please try again!", 400
+
     result = emotion_detector(text_to_analyze)
 
     if result["dominant_emotion"] is None:
-        return "Invalid text! Please try again!"
+        return "Invalid text! Please try again!", 400
 
     return (
         "For the given statement, the system response is "
@@ -34,4 +37,3 @@ def emotion_detector_route():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-    
